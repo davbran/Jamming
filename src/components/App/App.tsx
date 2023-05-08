@@ -1,75 +1,103 @@
-import React, { useState } from 'react';
+import { useCallback, useRef, useState } from "react";
 import './App.css';
-import SearchBar from "../SearchBar/SearchBar.js";
-import SearchResults from "../SearchResults/SearchResults.js";
-import Playlist from "../Playlist/Playlist.js";
-import Spotify from "../../util/Spotify.js";
-import { Track } from '../../util/CommonTypes.types'
-
-export interface AppProps {
-
-}
-
-const App: AppProps = () => {
-
-  const [searchResults, setSearchResults] = useState([])
-  const [playlistName, setPlayListName] = useState<string>('')
-  const [playlistTracks, setPlayListTracks] = useState<Track[]>([])
+import Playlist from "../Playlist/Playlist"
+import SearchBar from "../SearchBar/SearchBar";
+import SearchResults from "../SearchResults/SearchResults";
+import { search, useUser, addPlaylist, createPlaylist } from "../../util/Spotify";
+import { Track } from "../../util/CommonTypes.types";
+import React from "react";
+import { ToastContainer } from 'react-toastify';
+import { toast } from "react-toastify";
 
 
-  const addTrack = (track:Track) => {
-    if (playlistTracks.find(savedTrack => savedTrack.id === track.id)) {
-      return;
-    } else {
-      playlistTracks.push(track);
-      setPlayListTracks(playlistTracks);
+const App = () => {
+	const user = useUser();
+  const [searchResults, setSearchResults] = useState<Track[]>([])
+  const [playlistTracks, setPlaylistTracks] = useState<Track[]>([])
+	const playlistNameInputRef = useRef();
+
+	const addTrack = useCallback(
+		(track) => {
+			if (playlistTracks.some((savedTrack) => savedTrack.id === track.id)) {
+        toast.warn('Track already added to playlist')
+				return 
+			}
+			setPlaylistTracks((current) => [...current, track]);
+		},
+		[playlistTracks]
+	);
+
+	const removeTrack = useCallback(
+		(track) => {
+			if (playlistTracks.some((savedTrack) => savedTrack.id === track.id)) {
+				setPlaylistTracks((prevPlaylistTracks) =>
+					prevPlaylistTracks.filter((prevTrack) => prevTrack.id !== track.id)
+				);
+			}
+			return;
+		},
+		[playlistTracks]
+	);
+
+  
+  const searchTracks = (searchTerm:string) => {
+    if(!searchTerm){
+      return
     }
-  }
-
-  const removeTrack = (track:Track) => {
-    let newPlaylist = playlistTracks.filter(savedTrack => savedTrack.id !== track.id)
-    setPlayListTracks(newPlaylist);
-  }
-
-  const updatePlaylistName = (name:string) => {
-    setPlayListName(name);
-  }
-
-  const savePlaylist = () => {
-    let trackURIs = playlistTracks.map(track => track.uri)
-    console.log(trackURIs);
-    Spotify.savePlaylist(playlistName, trackURIs).then(() => {
-      setPlayListName('New Playlist')
-      setPlayListTracks([])
-    });
-  };
-
-
-
-  const search = (searchTerm:string) => {
-    console.log(searchTerm);
-    Spotify.search(searchTerm).then(searchResults => {
+    search(searchTerm)
+    .then((searchResults:Track[]) => {
       setSearchResults(searchResults)
     });
+    return searchResults
   }
 
-  return (
-    <div>
-      <h1>Mix<span className="highlight">tape</span>r</h1>
-      <div className="App">
-        <SearchBar onSearch={search} /*saveSearchTerm={saveSearchTerm}*/ />
-        <div className="App-playlist">
-          <SearchResults searchResults={searchResults} onAdd={addTrack} />
-          <Playlist playlistName={playlistName}
-            playlistTracks={playlistTracks}
+
+  const savePlaylist = useCallback(
+		async (playlistName) => {
+      if(!user){
+        return
+      }
+			const playlist = await createPlaylist(user.id, playlistName);
+			const trackURIs = playlistTracks.map((track) => track.uri);
+			addPlaylist(playlist.id, trackURIs);
+		},
+		[user, playlistTracks]
+	);
+
+	return (
+    <div className="container App">
+       
+      <header className="navbar">
+        <section className="navbar-section logo">
+          <h1>Mix<span className="highlight">tape</span>r</h1>
+        </section>
+        <section className="navbar-section greeting">
+          <h2 >{user &&  `Hello ${user.display_name}`}</h2>
+        </section>
+      </header>
+      <div>
+        <SearchBar searchTracks={searchTracks} />
+      </div>
+      <div className="columns App-playlist">
+        <div className="column col-5">
+          <SearchResults 
+            tracks={searchResults} 
+            handleTrackAction={addTrack} 
+          />
+        </div>
+        <div className="divider-vert"></div>
+        <div className="column col-5">
+          <Playlist
+            tracks={playlistTracks}
             onRemove={removeTrack}
-            onNameChange={updatePlaylistName}
-            onSave={savePlaylist} />
+            playlistNameInput={playlistNameInputRef}
+            onSave={savePlaylist}
+				  />
         </div>
       </div>
+      <ToastContainer closeOnClick />
     </div>
-  );
-}
-
+    )
+  }
 
 export default App;
