@@ -3,7 +3,7 @@ import './SearchBar.css';
 import { Track } from '../../util/CommonTypes.types';
 
 interface SearchBarProps {
-  searchTracks:(searchTerm: string) => Track[];
+  searchTracks:(searchTerm: string) => Track[] | void;
 }
 
 const SearchBar:React.FC<SearchBarProps> = ({ searchTracks }) => {

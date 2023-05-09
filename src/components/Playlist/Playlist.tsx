@@ -5,7 +5,7 @@ import { Track } from '../../util/CommonTypes.types.js';
 
 interface PlaylistProps {
   tracks:Track[], 
-  onRemove:(track:Track) => void,
+  onRemove:(track:Track) => Track[] | void,
   onSave:(track:Track) => void,
   playlistNameInput:any;
 }

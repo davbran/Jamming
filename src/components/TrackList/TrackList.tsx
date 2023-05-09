@@ -5,8 +5,8 @@ import { Track as TrackType } from '../../util/CommonTypes.types';
 
 interface TrackListProps{
   tracks:TrackType[], 
-  handleTrackAction: any,
-  onPlaylist: any
+  handleTrackAction: (track: TrackType) => TrackType[] | void,
+  onPlaylist: boolean
 }
 
 const TrackList:React.FC<TrackListProps> = ({tracks, handleTrackAction, onPlaylist}) => {

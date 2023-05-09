@@ -4,7 +4,7 @@ import { Track as TrackType } from '../../util/CommonTypes.types';
 
 interface TrackProps {
   track:TrackType, 
-  handleTrackAction:any,
+  handleTrackAction:(track: TrackType) => TrackType[] | void,
   onPlaylist:boolean
 }
 
