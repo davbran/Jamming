@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Track, User } from './CommonTypes.types';
+import { User } from './CommonTypes.types';
 import { toast } from 'react-toastify';
 
 
@@ -96,14 +96,14 @@ let accessToken:string|null = "";
     };
     
     /**
-      * addPlaylist() sends an HTTP POST request to the Spotify Web API 
+      * addTracks() sends an HTTP POST request to the Spotify Web API 
       * with the provided playlist ID and list of track URIs. 
       * Upon successful request, it prints 'Playlist saved' to console 
       * and shows a success toast.  
       * @param playlistId :string
       * @param trackURIs :string
     */
-    export const addPlaylist = (playlistId:string, trackURIs:string[]) => {
+    export const addTracks = (playlistId:string, trackURIs:string[]) => {
       const postEndpoint = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
     
       fetch(postEndpoint, {
@@ -147,7 +147,7 @@ let accessToken:string|null = "";
       };
 
 
-      // afunction to list users current playlists- not implemented yet
+      // a function to list users current playlists- not implemented yet
 
       export const getUserPlaylists = async (userName:string) => {
         return await fetch(`https://api.spotify.com/v1/users/${userName}/playlists`, {
